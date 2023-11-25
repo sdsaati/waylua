@@ -21,19 +21,19 @@
 * New flag `-d` and option `log_level` to change the wlroots debug level
 * Add CHANGELOG.md ([#501][501])
 
-[301]: https://github.com/djpohly/dwl/pull/301
-[368]: https://github.com/djpohly/dwl/pull/368
-[381]: https://github.com/djpohly/dwl/pull/381
-[387]: https://github.com/djpohly/dwl/issues/387
-[425]: https://github.com/djpohly/dwl/pull/425
+[301]: https://codeberg.org/dwl/dwl/pulls/301
+[368]: https://codeberg.org/dwl/dwl/pulls/368
+[381]: https://codeberg.org/dwl/dwl/pulls/381
+[387]: https://codeberg.org/dwl/dwl/issues/387
+[425]: https://codeberg.org/dwl/dwl/pulls/425
 [wlroots!4269]: https://gitlab.freedesktop.org/wlroots/wlroots/-/merge_requests/4269
 [wlroots!3511]: https://gitlab.freedesktop.org/wlroots/wlroots/-/merge_requests/3511
-[465]: https://github.com/djpohly/dwl/pull/465
-[444]: https://github.com/djpohly/dwl/pull/444
-[484]: https://github.com/djpohly/dwl/pull/484
-[466]: https://github.com/djpohly/dwl/issues/466
-[494]: https://github.com/djpohly/dwl/pull/494
-[501]: https://github.com/djpohly/dwl/pull/501
+[465]: https://codeberg.org/dwl/dwl/pulls/465
+[444]: https://codeberg.org/dwl/dwl/pulls/444
+[484]: https://codeberg.org/dwl/dwl/pulls/484
+[466]: https://codeberg.org/dwl/dwl/issues/466
+[494]: https://codeberg.org/dwl/dwl/pulls/494
+[501]: https://codeberg.org/dwl/dwl/pulls/501
 
 
 ### Changed
@@ -45,10 +45,10 @@
 * The version of wlr-layer-shell-unstable-v1 was lowered to 3 (from 4)
 * Use the same border color as dwm ([#494][494])
 
-[403]: https://github.com/djpohly/dwl/pull/403
-[408]: https://github.com/djpohly/dwl/pull/409
-[455]: https://github.com/djpohly/dwl/pull/455
-[494]: https://github.com/djpohly/dwl/pull/494
+[403]: https://codeberg.org/dwl/dwl/pulls/403
+[408]: https://codeberg.org/dwl/dwl/pulls/409
+[455]: https://codeberg.org/dwl/dwl/pulls/455
+[494]: https://codeberg.org/dwl/dwl/pulls/494
 
 
 ### Removed
@@ -57,9 +57,9 @@
 * Remove support for wlr-input-inhibitor-unstable-v1 ([#430][430])
 * Remove support for KDE idle protocol ([#431][431])
 
-[401]: https://github.com/djpohly/dwl/pull/401
-[430]: https://github.com/djpohly/dwl/pull/430
-[431]: https://github.com/djpohly/dwl/pull/431
+[401]: https://codeberg.org/dwl/dwl/pulls/401
+[430]: https://codeberg.org/dwl/dwl/pulls/430
+[431]: https://codeberg.org/dwl/dwl/pulls/431
 
 
 ### Fixed
@@ -73,10 +73,10 @@
 * Fullscreen background appearing above clients ([#487][487])
 * Fix a segfault when user provides invalid xkb_rules ([#518][518])
 
-[421]: https://github.com/djpohly/dwl/pull/421
-[408]: https://github.com/djpohly/dwl/issues/408
-[487]: https://github.com/djpohly/dwl/issues/487
-[518]: https://github.com/djpohly/dwl/pull/518
+[421]: https://codeberg.org/dwl/dwl/pulls/421
+[408]: https://codeberg.org/dwl/dwl/issues/408
+[487]: https://codeberg.org/dwl/dwl/issues/487
+[518]: https://codeberg.org/dwl/dwl/pulls/518
 
 
 ### Contributors
