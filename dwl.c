@@ -899,14 +899,16 @@ createmon(struct wl_listener *listener, void *data)
 	 * the user configure it. */
 	wlr_output_set_mode(wlr_output, wlr_output_preferred_mode(wlr_output));
 
+	wlr_output_enable(wlr_output, 1);
+	if (!wlr_output_commit(wlr_output)) {
+		wlr_output_destroy(wlr_output);
+		return;
+	}
+
 	/* Set up event listeners */
 	LISTEN(&wlr_output->events.frame, &m->frame, rendermon);
 	LISTEN(&wlr_output->events.destroy, &m->destroy, cleanupmon);
 	LISTEN(&wlr_output->events.request_state, &m->request_state, requestmonstate);
-
-	wlr_output_enable(wlr_output, 1);
-	if (!wlr_output_commit(wlr_output))
-		return;
 
 	wl_list_insert(&mons, &m->link);
 	printstatus();
