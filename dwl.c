@@ -857,6 +857,7 @@ createmon(struct wl_listener *listener, void *data)
 	 * monitor) becomes available. */
 	struct wlr_output *wlr_output = data;
 	const MonitorRule *r;
+	int matched = 0;
 	size_t i;
 	Monitor *m = wlr_output->data = ecalloc(1, sizeof(*m));
 	m->wlr_output = wlr_output;
@@ -869,6 +870,7 @@ createmon(struct wl_listener *listener, void *data)
 	m->tagset[0] = m->tagset[1] = 1;
 	for (r = monrules; r < END(monrules); r++) {
 		if (!r->name || strstr(wlr_output->name, r->name)) {
+			matched = 1;
 			m->mfact = r->mfact;
 			m->nmaster = r->nmaster;
 			wlr_output_set_scale(wlr_output, r->scale);
@@ -878,6 +880,12 @@ createmon(struct wl_listener *listener, void *data)
 			m->m.y = r->y;
 			break;
 		}
+	}
+
+	if (!matched) {
+		fprintf(stderr, "No monrules found for %s, ignoring output\n", wlr_output->name);
+		free(m);
+		return;
 	}
 
 	/* The mode is a tuple of (width, height, refresh rate), and each
