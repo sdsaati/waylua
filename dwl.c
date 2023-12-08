@@ -1,6 +1,7 @@
 /*
  * See LICENSE file for copyright and license details.
  */
+#include <dlfcn.h>
 #include <getopt.h>
 #include <libinput.h>
 #include <linux/input-event-codes.h>
@@ -225,6 +226,8 @@ typedef struct {
 	struct wl_listener unlock;
 	struct wl_listener destroy;
 } SessionLock;
+
+typedef double (*hooked_axis_t)(struct libinput_event_pointer*, enum libinput_pointer_axis);
 
 /* function declarations */
 static void applybounds(Client *c, struct wlr_box *bbox);
@@ -976,6 +979,18 @@ createnotify(struct wl_listener *listener, void *data)
 	LISTEN(&xdg_surface->toplevel->events.request_maximize, &c->maximize,
 			maximizenotify);
 	LISTEN(&xdg_surface->toplevel->events.set_title, &c->set_title, updatetitle);
+}
+
+double
+libinput_event_pointer_get_scroll_value(struct libinput_event_pointer* event, enum libinput_pointer_axis axis)
+{
+    void* sym = dlsym(RTLD_NEXT, "libinput_event_pointer_get_scroll_value");
+    hooked_axis_t hooked = *(hooked_axis_t*)(&sym);
+    if (axis == LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) {
+        return hooked(event, axis) * scroll_factor;
+    } else {
+        return hooked(event, axis) * scroll_factor;
+    }
 }
 
 void
