@@ -66,7 +66,7 @@ static const int natural_scrolling = 0;
 static const int disable_while_typing = 1;
 static const int left_handed = 0;
 static const int middle_button_emulation = 0;
-static const double scroll_factor = 1;
+static const double scroll_factor = 1.0;
 /* You can choose between:
 LIBINPUT_CONFIG_SCROLL_NO_SCROLL
 LIBINPUT_CONFIG_SCROLL_2FG
