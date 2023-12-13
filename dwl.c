@@ -988,13 +988,9 @@ createnotify(struct wl_listener *listener, void *data)
 double
 libinput_event_pointer_get_scroll_value(struct libinput_event_pointer* event, enum libinput_pointer_axis axis)
 {
-    void* sym = dlsym(RTLD_NEXT, "libinput_event_pointer_get_scroll_value");
+    void *sym = dlsym(RTLD_NEXT, "libinput_event_pointer_get_scroll_value");
     hooked_axis_t hooked = *(hooked_axis_t*)(&sym);
-    if (axis == LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) {
-        return hooked(event, axis) * scroll_factor;
-    } else {
-        return hooked(event, axis) * scroll_factor;
-    }
+    return hooked(event, axis) * scroll_factor;
 }
 
 void
