@@ -23,6 +23,7 @@
 #include <wlr/types/wlr_drm.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_fractional_scale_v1.h>
+#include <wlr/types/wlr_frame_scheduler.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
 #include <wlr/types/wlr_idle_inhibit_v1.h>
 #include <wlr/types/wlr_idle_notify_v1.h>
@@ -881,8 +882,10 @@ createmon(struct wl_listener *listener, void *data)
 	 * the user configure it. */
 	wlr_output_state_set_mode(&state, wlr_output_preferred_mode(wlr_output));
 
+	m->scene_output = wlr_scene_output_create(scene, wlr_output);
+
 	/* Set up event listeners */
-	LISTEN(&wlr_output->events.frame, &m->frame, rendermon);
+	LISTEN(&m->scene_output->frame_scheduler->events.frame, &m->frame, rendermon);
 	LISTEN(&wlr_output->events.destroy, &m->destroy, cleanupmon);
 	LISTEN(&wlr_output->events.request_state, &m->request_state, requestmonstate);
 
@@ -911,7 +914,6 @@ createmon(struct wl_listener *listener, void *data)
 	 * display, which Wayland clients can see to find out information about the
 	 * output (such as DPI, scale factor, manufacturer, etc).
 	 */
-	m->scene_output = wlr_scene_output_create(scene, wlr_output);
 	if (m->m.x < 0 || m->m.y < 0)
 		wlr_output_layout_add_auto(output_layout, wlr_output);
 	else
@@ -1882,7 +1884,7 @@ rendermon(struct wl_listener *listener, void *data)
 			goto commit;
 		}
 		wlr_output_commit_state(m->wlr_output, &pending);
-		wlr_output_schedule_frame(m->wlr_output);
+		wlr_frame_scheduler_schedule_frame(m->scene_output->frame_scheduler);
 	} else {
 commit:
 		wlr_scene_output_commit(m->scene_output, NULL);
@@ -2077,7 +2079,7 @@ setgamma(struct wl_listener *listener, void *data)
 	struct wlr_gamma_control_manager_v1_set_gamma_event *event = data;
 	Monitor *m = event->output->data;
 	m->gamma_lut_changed = 1;
-	wlr_output_schedule_frame(m->wlr_output);
+	wlr_frame_scheduler_schedule_frame(m->scene_output->frame_scheduler);
 }
 
 void
