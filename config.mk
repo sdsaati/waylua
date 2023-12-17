@@ -11,12 +11,12 @@ DATADIR = $(PREFIX)/share
 # Allow using an alternative wlroots installations
 # This has to have all the includes required by wlroots, e.g:
 # Assuming wlroots git repo is "${PWD}/wlroots" and you only ran "meson setup build && ninja -C build"
-#WLR_INCS = -I/usr/include/pixman-1 -I/usr/include/elogind -I/usr/include/libdrm \
-#	-I$(PWD)/wlroots/include
+WLR_INCS = -I/usr/include/pixman-1 -I/usr/include/elogind -I/usr/include/libdrm \
+	-I$(PWD)/wlroots/include
 # Set -rpath to avoid using the system library.
-#WLR_LIBS = -Wl,-rpath,$(PWD)/wlroots/build -L$(PWD)/wlroots/build -lwlroots-0.19
-WLR_INCS = `$(PKG_CONFIG) --cflags wlroots-0.19`
-WLR_LIBS = `$(PKG_CONFIG) --libs wlroots-0.19`
+WLR_LIBS = -Wl,-rpath,$(PWD)/wlroots/build-new-frame-scheduler -L$(PWD)/wlroots/build-new-frame-scheduler -lwlroots
+#WLR_INCS = `$(PKG_CONFIG) --cflags wlroots-0.19`
+#WLR_LIBS = `$(PKG_CONFIG) --libs wlroots-0.19`
 
 XWAYLAND =
 XLIBS =
