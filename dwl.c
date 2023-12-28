@@ -1065,8 +1065,8 @@ cursorwarptohint(void)
 	toplevel_from_wlr_surface(active_constraint->surface, &c, NULL);
 	/* TODO: wlroots 0.18: https://gitlab.freedesktop.org/wlroots/wlroots/-/merge_requests/4478 */
 	if (c && (active_constraint->current.committed & WLR_POINTER_CONSTRAINT_V1_STATE_CURSOR_HINT)) {
-		sx = lx = active_constraint->current.cursor_hint.x + c->mon->m.x;
-		sy = ly = active_constraint->current.cursor_hint.y + c->mon->m.y;
+		sx = lx = active_constraint->current.cursor_hint.x + c->mon->m.x + c->bw;
+		sy = ly = active_constraint->current.cursor_hint.y + c->mon->m.y + c->bw;
 		wlr_cursor_warp(cursor, NULL, lx - c->geom.x, ly - c->geom.y);
 		wlr_seat_pointer_warp(seat, sx, sy);
 	}
@@ -1693,8 +1693,8 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
 		if (active_constraint && cursor_mode != CurResize && cursor_mode != CurMove) {
 			toplevel_from_wlr_surface(active_constraint->surface, &c, NULL);
 			if (c && active_constraint->surface == seat->keyboard_state.focused_surface) {
-				sx = cursor->x - c->geom.x + c->mon->m.x;
-				sy = cursor->y - c->geom.y + c->mon->m.y;
+				sx = cursor->x - c->geom.x - c->bw + c->mon->m.x;
+				sy = cursor->y - c->geom.y - c->bw + c->mon->m.y;
 				if (wlr_region_confine(&active_constraint->region, sx, sy,
 						sx + dx, sy + dy, &sx_confined, &sy_confined)) {
 					dx = sx_confined - sx;
