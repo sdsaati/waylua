@@ -1060,14 +1060,14 @@ void
 cursorwarptohint(void)
 {
 	Client *c = NULL;
-	double lx, ly, sx, sy;
+	double sx, sy;
 
 	toplevel_from_wlr_surface(active_constraint->surface, &c, NULL);
 	/* TODO: wlroots 0.18: https://gitlab.freedesktop.org/wlroots/wlroots/-/merge_requests/4478 */
 	if (c && (active_constraint->current.committed & WLR_POINTER_CONSTRAINT_V1_STATE_CURSOR_HINT)) {
-		sx = lx = active_constraint->current.cursor_hint.x + c->mon->m.x + c->bw;
-		sy = ly = active_constraint->current.cursor_hint.y + c->mon->m.y + c->bw;
-		wlr_cursor_warp(cursor, NULL, lx - c->geom.x, ly - c->geom.y);
+		sx = active_constraint->current.cursor_hint.x + c->mon->m.x + c->bw;
+		sy = active_constraint->current.cursor_hint.y + c->mon->m.y + c->bw;
+		wlr_cursor_warp(cursor, NULL, sx - c->geom.x, sy - c->geom.y);
 		wlr_seat_pointer_warp(seat, sx, sy);
 	}
 }
