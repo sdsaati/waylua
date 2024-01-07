@@ -1067,7 +1067,7 @@ cursorwarptohint(void)
 	if (c && (active_constraint->current.committed & WLR_POINTER_CONSTRAINT_V1_STATE_CURSOR_HINT)) {
 		sx = active_constraint->current.cursor_hint.x + c->mon->m.x + c->bw;
 		sy = active_constraint->current.cursor_hint.y + c->mon->m.y + c->bw;
-		wlr_cursor_warp(cursor, NULL, sx - c->geom.x, sy - c->geom.y);
+		wlr_cursor_warp(cursor, NULL, sx - (2 * c->geom.x), sy - (2 * c->geom.y));
 		wlr_seat_pointer_warp(seat, sx, sy);
 	}
 }
