@@ -2090,6 +2090,17 @@ setlayout(const Arg *arg)
 	if (arg && arg->v)
 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, LENGTH(selmon->ltsymbol));
+
+        //if current tag is 0 and arg is &layout[0], that is, in tag 0, MOD+t is pressed, find the tag current focused window is associated and view that tag.
+	if (((selmon)->tagset[(selmon)->seltags]^TAGMASK)==0){ //if current selected tag is 1...111, XOR TAGMASK will be 0
+	  Client* current_focused_client = focustop(selmon);
+	  if (current_focused_client){
+	     Arg tags_of_current_focused_client;
+	     tags_of_current_focused_client.ui=current_focused_client->tags;
+	     view(&tags_of_current_focused_client);
+	  }
+	}
+	
 	arrange(selmon);
 	printstatus();
 }
