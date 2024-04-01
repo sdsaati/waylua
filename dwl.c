@@ -1688,6 +1688,7 @@ void
 motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double dy,
 		double dx_unaccel, double dy_unaccel)
 {
+	int nx, ny;
 	double sx = 0, sy = 0, sx_confined, sy_confined;
 	Client *c = NULL, *w = NULL;
 	LayerSurface *l = NULL;
@@ -1733,7 +1734,17 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
 	/* If we are currently grabbing the mouse, handle and return */
 	if (cursor_mode == CurMove) {
 		/* Move the grabbed client to the new position. */
-		resize(grabc, (struct wlr_box){.x = ROUND(cursor->x) - grabcx, .y = ROUND(cursor->y) - grabcy,
+		nx = ROUND(cursor->x) - grabcx;
+		ny = ROUND(cursor->y) - grabcy;
+		if (abs(selmon->w.x - nx) < snap)
+			nx = selmon->w.x;
+		else if (abs((selmon->w.x + selmon->w.width) - (nx + grabc->geom.width)) < snap)
+			nx = selmon->w.x + selmon->w.width - grabc->geom.width;
+		if (abs(selmon->w.y - ny) < snap)
+			ny = selmon->w.y;
+		else if (abs((selmon->w.y + selmon->w.height) - (ny + grabc->geom.height)) < snap)
+			ny = selmon->w.y + selmon->w.height - grabc->geom.height;
+		resize(grabc, (struct wlr_box){.x = nx, .y = ny,
 			.width = grabc->geom.width, .height = grabc->geom.height}, 1);
 		return;
 	} else if (cursor_mode == CurResize) {
