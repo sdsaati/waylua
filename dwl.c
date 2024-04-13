@@ -1618,6 +1618,9 @@ mapnotify(struct wl_listener *listener, void *data)
 	} else {
 		applyrules(c);
 	}
+	if (!c->mon->lt[c->mon->sellt]->arrange) 
+		setfloating(c, 1);
+
 	printstatus();
 
 unset_fullscreen:
