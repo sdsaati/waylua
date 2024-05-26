@@ -468,6 +468,7 @@ applyrules(Client *c)
 				if (r->monitor == i++)
 					mon = m;
 			}
+			break;
 		}
 	}
 	setmon(c, mon, newtags);
