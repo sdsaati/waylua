@@ -814,17 +814,37 @@ KeyboardGroup *
 createkeyboardgroup(void)
 {
 	KeyboardGroup *group = ecalloc(1, sizeof(*group));
-	struct xkb_context *context;
-	struct xkb_keymap *keymap;
+	struct xkb_context *context = NULL;
+	struct xkb_keymap *keymap = NULL;
 
 	group->wlr_group = wlr_keyboard_group_create();
 	group->wlr_group->data = group;
 
 	/* Prepare an XKB keymap and assign it to the keyboard group. */
 	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-	if (!(keymap = xkb_keymap_new_from_names(context, &xkb_rules,
-				XKB_KEYMAP_COMPILE_NO_FLAGS)))
+
+	FILE* xkb_file = NULL;
+
+	if (use_custom_xkb_file == 1) {
+		xkb_file = fopen(path_to_xkb_file, "r");
+	}
+
+	if (xkb_file != NULL) {
+		keymap = xkb_keymap_new_from_file(context, xkb_file,
+				XKB_KEYMAP_FORMAT_TEXT_V1,
+				XKB_KEYMAP_COMPILE_NO_FLAGS);
+		fclose(xkb_file);
+	}
+
+	/* Compile keymap from names if it was not compiled from xkb_file */
+	if (keymap == NULL) {
+		keymap = xkb_keymap_new_from_names(context, &xkb_rules,
+		XKB_KEYMAP_COMPILE_NO_FLAGS);
+	}
+
+	if (keymap == NULL) {
 		die("failed to compile keymap");
+	}
 
 	wlr_keyboard_set_keymap(&group->wlr_group->keyboard, keymap);
 	xkb_keymap_unref(keymap);

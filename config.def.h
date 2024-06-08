@@ -57,6 +57,14 @@ static const struct xkb_rule_names xkb_rules = {
 	.options = NULL,
 };
 
+/* Wether to try to use an xkb file */
+static const int use_custom_xkb_file = 1;
+
+/* Complete path to a xkb file */
+/* NOTE: if dwl fails to compile the file, the xkb_names will be used */
+/* instead */
+static const char* path_to_xkb_file = "/etc/xkb/custom-layout.xkb";
+
 static const int repeat_rate = 25;
 static const int repeat_delay = 600;
 
