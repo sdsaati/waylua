@@ -38,7 +38,7 @@ toplevel_from_wlr_surface(struct wlr_surface *s, Client **pc, LayerSurface **pl)
 	struct wlr_xwayland_surface *xsurface;
 #endif
 
-	if (!s)
+	if (!s || (!s->addons.addons.prev && !s->addons.addons.next))
 		return -1;
 	root_surface = wlr_surface_get_root_surface(s);
 

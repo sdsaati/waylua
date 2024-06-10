@@ -1808,8 +1808,9 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
 	/* Find the client under the pointer and send the event along. */
 	xytonode(cursor->x, cursor->y, &surface, &c, NULL, &sx, &sy);
 
-	if (cursor_mode == CurPressed && !seat->drag && surface != held_grab
-			&& toplevel_from_wlr_surface(held_grab, &w, &l) >= 0) {
+	if (cursor_mode == CurPressed && !seat->drag && surface != held_grab) {
+		if (toplevel_from_wlr_surface(held_grab, &w, &l) < 0)
+			return;
 		c = w;
 		surface = held_grab;
 		sx = cursor->x - (l ? l->geom.x : w->geom.x);
