@@ -140,6 +140,7 @@ typedef struct {
 	uint32_t tags;
 	int isfloating, isurgent, isfullscreen;
 	uint32_t resize; /* configure serial of a pending resize */
+	struct wl_event_source *reset_resize_source;
 } Client;
 
 typedef struct {
@@ -315,6 +316,7 @@ static void printstatus(void);
 static void powermgrsetmode(struct wl_listener *listener, void *data);
 static void quit(const Arg *arg);
 static void rendermon(struct wl_listener *listener, void *data);
+static int reset_resize(void *data);
 static void requestdecorationmode(struct wl_listener *listener, void *data);
 static void requeststartdrag(struct wl_listener *listener, void *data);
 static void requestmonstate(struct wl_listener *listener, void *data);
@@ -1041,6 +1043,9 @@ createnotify(struct wl_listener *listener, void *data)
 	LISTEN(&xdg_surface->toplevel->events.request_maximize, &c->maximize,
 			maximizenotify);
 	LISTEN(&xdg_surface->toplevel->events.set_title, &c->set_title, updatetitle);
+
+	c->reset_resize_source = wl_event_loop_add_timer(
+			wl_display_get_event_loop(dpy), reset_resize, c);
 }
 
 void
@@ -1240,6 +1245,7 @@ destroynotify(struct wl_listener *listener, void *data)
 		wl_list_remove(&c->commit.link);
 		wl_list_remove(&c->map.link);
 		wl_list_remove(&c->unmap.link);
+		wl_event_source_remove(c->reset_resize_source);
 	}
 	free(c);
 }
@@ -2056,7 +2062,7 @@ rendermon(struct wl_listener *listener, void *data)
 	/* Render if no XDG clients have an outstanding resize and are visible on
 	 * this monitor. */
 	wl_list_for_each(c, &clients, link) {
-		if (c->resize && client_is_rendered_on_mon(c, m) && !client_is_stopped(c))
+		if (c->resize && client_is_rendered_on_mon(c, m))
 			goto skip;
 	}
 
@@ -2094,6 +2100,17 @@ skip:
 	wlr_output_state_finish(&pending);
 }
 
+int
+reset_resize(void *data)
+{
+	Client *c = data;
+	c->resize = 0;
+	wl_event_source_timer_update(c->reset_resize_source, 0);
+	if (c->mon)
+		wlr_output_schedule_frame(c->mon->wlr_output);
+	return 1;
+}
+
 void
 requestdecorationmode(struct wl_listener *listener, void *data)
 {
@@ -2127,6 +2144,7 @@ resize(Client *c, struct wlr_box geo, int interact)
 {
 	struct wlr_box *bbox;
 	struct wlr_box clip;
+	uint32_t refresh_rate = 0;
 
 	if (!c->mon)
 		return;
@@ -2153,6 +2171,17 @@ resize(Client *c, struct wlr_box geo, int interact)
 			c->geom.height - 2 * c->bw);
 	client_get_clip(c, &clip);
 	wlr_scene_subsurface_tree_set_clip(&c->scene_surface->node, &clip);
+	refresh_rate = c->mon->wlr_output->current_mode
+			? c->mon->wlr_output->current_mode->refresh
+			: c->mon->wlr_output->refresh;
+	if (!refresh_rate)
+		refresh_rate = 60000;
+	refresh_rate /= 1000;
+	/* We want to skip around 3 frames, more may feel sluggish and less may
+	 * result in more screen artifacts */
+	/* TODO: maybe let decide the user how many frames? */
+	wl_event_source_timer_update(c->reset_resize_source,
+			(3000 + refresh_rate)  / refresh_rate);
 }
 
 void
