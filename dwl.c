@@ -93,6 +93,7 @@ enum { ClkTagBar, ClkLtSymbol, ClkStatus, ClkTitle, ClkClient, ClkRoot }; /* cli
 enum { NetWMWindowTypeDialog, NetWMWindowTypeSplash, NetWMWindowTypeToolbar,
 	NetWMWindowTypeUtility, NetLast }; /* EWMH atoms */
 #endif
+enum { SWIPE_LEFT, SWIPE_RIGHT, SWIPE_DOWN, SWIPE_UP };
 
 typedef union {
 	int i;
@@ -108,6 +109,14 @@ typedef struct {
 	void (*func)(const Arg *);
 	const Arg arg;
 } Button;
+
+typedef struct {
+	unsigned int mod;
+	unsigned int motion;
+	unsigned int fingers_count;
+	void (*func)(const Arg *);
+	const Arg arg;
+} Gesture;
 
 typedef struct Monitor Monitor;
 typedef struct {
@@ -276,6 +285,7 @@ static void buffer_destroy(struct wlr_buffer *buffer);
 static bool buffer_begin_data_ptr_access(struct wlr_buffer *buffer, uint32_t flags, void **data, uint32_t *format, size_t *stride);
 static void buffer_end_data_ptr_access(struct wlr_buffer *buffer);
 static void buttonpress(struct wl_listener *listener, void *data);
+static int ongesture(struct wlr_pointer_swipe_end_event *event);
 static void chvt(const Arg *arg);
 static void checkidleinhibitor(struct wlr_surface *exclude);
 static void cleanup(void);
@@ -438,6 +448,10 @@ static struct wlr_box sgeom;
 static struct wl_list mons;
 static Monitor *selmon;
 
+static uint32_t swipe_fingers = 0;
+static double swipe_dx = 0;
+static double swipe_dy = 0;
+
 static char stext[256];
 static struct wl_event_source *status_event_source;
 
@@ -465,6 +479,8 @@ static xcb_atom_t netatom[NetLast];
 
 /* attempt to encapsulate suck into one file */
 #include "client.h"
+
+static const unsigned int abzsquare = swipe_min_threshold * swipe_min_threshold;
 
 /* function implementations */
 void
