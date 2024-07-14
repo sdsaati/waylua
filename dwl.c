@@ -38,6 +38,7 @@
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_output_management_v1.h>
 #include <wlr/types/wlr_output_power_management_v1.h>
+#include <wlr/types/wlr_output_swapchain_manager.h>
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_pointer_constraints_v1.h>
 #include <wlr/types/wlr_presentation_time.h>
@@ -1941,48 +1942,57 @@ outputmgrapplyortest(struct wlr_output_configuration_v1 *config, int test)
 	 * output_layout.change event, not here.
 	 */
 	struct wlr_output_configuration_head_v1 *config_head;
-	int ok = 1;
+	size_t states_len, i;
+	struct wlr_output_swapchain_manager swapchain_manager;
+	struct wlr_backend_output_state *states = wlr_output_configuration_v1_build_state(config, &states_len);
+	int ok = 0;
+
+	if (!states) {
+		wlr_output_configuration_v1_send_failed(config);
+		return;
+	}
+
+	wlr_output_swapchain_manager_init(&swapchain_manager, backend);
+
+	ok = wlr_output_swapchain_manager_prepare(&swapchain_manager, states, states_len);
+	if (!ok || test)
+		goto out;
+
+	for (i = 0; i < states_len; i++) {
+		Monitor *m = states[i].output->data;
+		wlr_scene_output_build_state(m->scene_output, &states[i].base, NULL);
+	}
+
+	if (!(ok = wlr_backend_commit(backend, states, states_len)))
+		goto out;
+
+	wlr_output_swapchain_manager_apply(&swapchain_manager);
 
 	wl_list_for_each(config_head, &config->heads, link) {
 		struct wlr_output *wlr_output = config_head->state.output;
 		Monitor *m = wlr_output->data;
-		struct wlr_output_state state;
 
 		/* Ensure displays previously disabled by wlr-output-power-management-v1
 		 * are properly handled*/
 		m->asleep = 0;
 
-		wlr_output_state_init(&state);
-		wlr_output_state_set_enabled(&state, config_head->state.enabled);
-		if (!config_head->state.enabled)
-			goto apply_or_test;
-
-		if (config_head->state.mode)
-			wlr_output_state_set_mode(&state, config_head->state.mode);
-		else
-			wlr_output_state_set_custom_mode(&state,
-					config_head->state.custom_mode.width,
-					config_head->state.custom_mode.height,
-					config_head->state.custom_mode.refresh);
-
-		wlr_output_state_set_transform(&state, config_head->state.transform);
-		wlr_output_state_set_scale(&state, config_head->state.scale);
-		wlr_output_state_set_adaptive_sync_enabled(&state,
-				config_head->state.adaptive_sync_enabled);
-
-apply_or_test:
-		ok &= test ? wlr_output_test_state(wlr_output, &state)
-				: wlr_output_commit_state(wlr_output, &state);
-
 		/* Don't move monitors if position wouldn't change, this to avoid
-		* wlroots marking the output as manually configured.
-		* wlr_output_layout_add does not like disabled outputs */
-		if (!test && wlr_output->enabled && (m->m.x != config_head->state.x || m->m.y != config_head->state.y))
+		 * wlroots marking the output as manually configured.
+		 * wlr_output_layout_add does not like disabled outputs */
+		if (config_head->state.enabled
+				&& (m->m.x != config_head->state.x || m->m.y != config_head->state.y
+						|| !wlr_output_layout_get(output_layout, wlr_output))) {
 			wlr_output_layout_add(output_layout, wlr_output,
 					config_head->state.x, config_head->state.y);
-
-		wlr_output_state_finish(&state);
+		}
 	}
+
+out:
+	wlr_output_swapchain_manager_finish(&swapchain_manager);
+	for (i = 0; i < states_len; i++)
+		wlr_output_state_finish(&states[i].base);
+
+	free(states);
 
 	if (ok)
 		wlr_output_configuration_v1_send_succeeded(config);
