@@ -569,7 +569,7 @@ arrangelayers(Monitor *m)
 	/* Find topmost keyboard interactive layer, if such a layer exists */
 	for (i = 0; i < (int)LENGTH(layers_above_shell); i++) {
 		wl_list_for_each_reverse(l, &m->layers[layers_above_shell[i]], link) {
-			if (locked || !l->layer_surface->current.keyboard_interactive || !l->mapped)
+			if (locked || l->layer_surface->current.keyboard_interactive != ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE || !l->mapped)
 				continue;
 			/* Deactivate the focused client. */
 			focusclient(NULL, 0);
@@ -602,6 +602,8 @@ buttonpress(struct wl_listener *listener, void *data)
 	struct wlr_keyboard *keyboard;
 	uint32_t mods;
 	Client *c;
+	LayerSurface *l;
+	struct wlr_surface *surface;
 	const Button *b;
 
 	wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
@@ -614,9 +616,16 @@ buttonpress(struct wl_listener *listener, void *data)
 			break;
 
 		/* Change focus if the button was _pressed_ over a client */
-		xytonode(cursor->x, cursor->y, NULL, &c, NULL, NULL, NULL);
-		if (c && (!client_is_unmanaged(c) || client_wants_focus(c)))
-			focusclient(c, 1);
+		xytonode(cursor->x, cursor->y, &surface, NULL, NULL, NULL, NULL);
+		if (toplevel_from_wlr_surface(surface, &c, &l) >= 0) {
+			if (c && (!client_is_unmanaged(c) || client_wants_focus(c)))
+				focusclient(c, 1);
+
+			if (l && l->layer_surface->current.keyboard_interactive) {
+				focusclient(NULL, 0);
+				client_notify_enter(l->layer_surface->surface, wlr_seat_get_keyboard(seat));
+			}
+		}
 
 		keyboard = wlr_seat_get_keyboard(seat);
 		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
@@ -774,6 +783,11 @@ commitlayersurfacenotify(struct wl_listener *listener, void *data)
 		l->layer_surface->current = old_state;
 		return;
 	}
+
+	if (layer_surface == exclusive_focus
+			&& layer_surface->current.keyboard_interactive !=
+					ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE)
+		exclusive_focus = NULL;
 
 	if (layer_surface->current.committed == 0 && l->mapped == layer_surface->surface->mapped)
 		return;
@@ -2539,7 +2553,7 @@ setup(void)
 	LISTEN_STATIC(&xdg_shell->events.new_toplevel, createnotify);
 	LISTEN_STATIC(&xdg_shell->events.new_popup, createpopup);
 
-	layer_shell = wlr_layer_shell_v1_create(dpy, 3);
+	layer_shell = wlr_layer_shell_v1_create(dpy, 4);
 	LISTEN_STATIC(&layer_shell->events.new_surface, createlayersurface);
 
 	idle_notifier = wlr_idle_notifier_v1_create(dpy);
