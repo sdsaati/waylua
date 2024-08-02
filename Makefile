@@ -4,17 +4,19 @@
 include config.mk
 
 # flags for compiling
-DWLCPPFLAGS = -I. -DWLR_USE_UNSTABLE -D_POSIX_C_SOURCE=200809L \
-	-DVERSION=\"$(VERSION)\" $(XWAYLAND)
-DWLDEVCFLAGS = -g -Wpedantic -Wall -Wextra -Wdeclaration-after-statement \
+DWLCFLAGS = -g -Wpedantic -Wall -Wextra -Wdeclaration-after-statement \
 	-Wno-unused-parameter -Wshadow -Wunused-macros -Werror=strict-prototypes \
 	-Werror=implicit -Werror=return-type -Werror=incompatible-pointer-types \
 	-Wfloat-conversion
+DWLCFLAGS += -I. -DWLR_USE_UNSTABLE -D_POSIX_C_SOURCE=200809L \
+	-DVERSION=\"$(VERSION)\" $(XWAYLAND)
 
 # CFLAGS / LDFLAGS
-PKGS      = wayland-server xkbcommon libinput $(XLIBS)
-DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(WLR_INCS) $(DWLCPPFLAGS) $(DWLDEVCFLAGS) $(CFLAGS)
-LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(WLR_LIBS) -lm $(LIBS)
+PKGS      =  wayland-server xkbcommon libinput $(XLIBS)
+PKGS_INCS != $(PKG_CONFIG) --cflags $(PKGS)
+DWLCFLAGS += $(WLR_INCS) $(PKGS_INCS) $(CFLAGS)
+PKGS_LIBS != $(PKG_CONFIG) --libs $(PKGS)
+LDLIBS    += $(WLR_LIBS) $(PKGS_LIBS) -lm $(LIBS)
 
 all: dwl
 dwl: dwl.o util.o
@@ -27,8 +29,8 @@ util.o: util.c util.h
 # wayland-scanner is a tool which generates C headers and rigging for Wayland
 # protocols, which are specified in XML. wlroots requires you to rig these up
 # to your build system yourself and provide them in the include path.
-WAYLAND_SCANNER   = `$(PKG_CONFIG) --variable=wayland_scanner wayland-scanner`
-WAYLAND_PROTOCOLS = `$(PKG_CONFIG) --variable=pkgdatadir wayland-protocols`
+WAYLAND_SCANNER   != $(PKG_CONFIG) --variable=wayland_scanner wayland-scanner
+WAYLAND_PROTOCOLS != $(PKG_CONFIG) --variable=pkgdatadir wayland-protocols
 
 cursor-shape-v1-protocol.h:
 	$(WAYLAND_SCANNER) enum-header \
