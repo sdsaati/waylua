@@ -16,7 +16,6 @@
 #include <wlr/backend/libinput.h>
 #include <wlr/render/allocator.h>
 #include <wlr/render/wlr_renderer.h>
-#include <wlr/types/wlr_alpha_modifier_v1.h>
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_cursor_shape_v1.h>
@@ -33,7 +32,6 @@
 #include <wlr/types/wlr_keyboard_group.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/types/wlr_linux_dmabuf_v1.h>
-#include <wlr/types/wlr_linux_drm_syncobj_v1.h>
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_output_management_v1.h>
@@ -2431,7 +2429,7 @@ setsel(struct wl_listener *listener, void *data)
 void
 setup(void)
 {
-	int drm_fd, i, sig[] = {SIGCHLD, SIGINT, SIGTERM, SIGPIPE};
+	int i, sig[] = {SIGCHLD, SIGINT, SIGTERM, SIGPIPE};
 	struct sigaction sa = {.sa_flags = SA_RESTART, .sa_handler = handlesig};
 	sigemptyset(&sa.sa_mask);
 
@@ -2475,14 +2473,11 @@ setup(void)
 	 * with wlr_scene. */
 	wlr_renderer_init_wl_shm(drw, dpy);
 
-	if (wlr_renderer_get_texture_formats(drw, WLR_BUFFER_CAP_DMABUF)) {
+	if (wlr_renderer_get_dmabuf_texture_formats(drw)) {
 		wlr_drm_create(dpy, drw);
 		wlr_scene_set_linux_dmabuf_v1(scene,
 				wlr_linux_dmabuf_v1_create_with_renderer(dpy, 5, drw));
 	}
-
-	if ((drm_fd = wlr_renderer_get_drm_fd(drw)) >= 0 && drw->features.timeline)
-		wlr_linux_drm_syncobj_manager_v1_create(dpy, 1, drm_fd);
 
 	/* Autocreates an allocator for us.
 	 * The allocator is the bridge between the renderer and the backend. It
@@ -2508,7 +2503,6 @@ setup(void)
 	wlr_single_pixel_buffer_manager_v1_create(dpy);
 	wlr_fractional_scale_manager_v1_create(dpy, 1);
 	wlr_presentation_create(dpy, backend);
-	wlr_alpha_modifier_v1_create(dpy);
 
 	/* Initializes the interface used to implement urgency hints */
 	activation = wlr_xdg_activation_v1_create(dpy);
