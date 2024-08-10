@@ -124,11 +124,14 @@ client_set_bounds(Client *c, int32_t width, int32_t height)
 static inline const char *
 client_get_appid(Client *c)
 {
+	const char *app_id;
 #ifdef XWAYLAND
 	if (client_is_x11(c))
-		return c->surface.xwayland->class;
+		app_id = c->surface.xwayland->class;
+	else
 #endif
-	return c->surface.xdg->toplevel->app_id;
+		app_id = c->surface.xdg->toplevel->app_id;
+	return app_id ? app_id : "broken";
 }
 
 static inline void
@@ -198,11 +201,14 @@ client_has_children(Client *c)
 static inline const char *
 client_get_title(Client *c)
 {
+	const char *title;
 #ifdef XWAYLAND
 	if (client_is_x11(c))
-		return c->surface.xwayland->title;
+		title = c->surface.xwayland->title;
+	else
 #endif
-	return c->surface.xdg->toplevel->title;
+		title = c->surface.xdg->toplevel->title;
+	return title ? title : "broken";
 }
 
 static inline int
