@@ -152,7 +152,6 @@ typedef struct {
 } Key;
 
 typedef struct {
-	struct wl_list link;
 	struct wlr_keyboard_group *wlr_group;
 
 	int nsyms;
