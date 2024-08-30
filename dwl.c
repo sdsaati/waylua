@@ -465,7 +465,7 @@ applyrules(Client *c)
 	for (r = rules; r < END(rules); r++) {
 		if ((!r->title || strstr(title, r->title))
 				&& (!r->id || strstr(appid, r->id))) {
-			if (r->isfloating < -1)
+			if (r->isfloating > -1)
 				c->isfloating = r->isfloating;
 			newtags |= r->tags;
 			i = 0;
