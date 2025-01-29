@@ -925,7 +925,9 @@ void
 createidleinhibitor(struct wl_listener *listener, void *data)
 {
 	struct wlr_idle_inhibitor_v1 *idle_inhibitor = data;
-	LISTEN_STATIC(&idle_inhibitor->events.destroy, destroyidleinhibitor);
+	struct wl_listener *destroy_listener = ecalloc(1, sizeof(*destroy_listener));
+
+	LISTEN(&idle_inhibitor->events.destroy, destroy_listener, destroyidleinhibitor);
 
 	checkidleinhibitor(NULL);
 }
@@ -1255,6 +1257,7 @@ destroyidleinhibitor(struct wl_listener *listener, void *data)
 	 * at this point the idle inhibitor is still in the list of the manager */
 	checkidleinhibitor(wlr_surface_get_root_surface(data));
 	wl_list_remove(&listener->link);
+	free(listener);
 }
 
 void
