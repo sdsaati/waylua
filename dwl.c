@@ -1554,10 +1554,15 @@ gpureset(struct wl_listener *listener, void *data)
 void
 handlesig(int signo)
 {
+#ifdef XWAYLAND
+    if (signo == SIGINT || signo == SIGTERM)
+		quit(NULL);
+#else
 	if (signo == SIGCHLD)
 		while (waitpid(-1, NULL, WNOHANG) > 0);
 	else if (signo == SIGINT || signo == SIGTERM)
 		quit(NULL);
+#endif
 }
 
 void
