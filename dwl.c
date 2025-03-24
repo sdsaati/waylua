@@ -1591,6 +1591,7 @@ keypress(struct wl_listener *listener, void *data)
 
 	int handled = 0;
 	uint32_t mods = wlr_keyboard_get_modifiers(&group->wlr_group->keyboard);
+	static bool consumed[1024]; // max is 767 (KEY_MAX in linux input-event-codes.h)
 
 	wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
 
@@ -1612,9 +1613,15 @@ keypress(struct wl_listener *listener, void *data)
 		wl_event_source_timer_update(group->key_repeat_source, 0);
 	}
 
-	if (handled)
+	if (handled) {
+		consumed[event->keycode] = true;
 		return;
+	}
 
+	if (event->state != WL_KEYBOARD_KEY_STATE_PRESSED && consumed[event->keycode]) {
+		consumed[event->keycode] = false;
+		return; // don't pass the release event of a handled event to the client
+	}
 	wlr_seat_set_keyboard(seat, &group->wlr_group->keyboard);
 	/* Pass unhandled keycodes along to the client. */
 	wlr_seat_keyboard_notify_key(seat, event->time_msec,
