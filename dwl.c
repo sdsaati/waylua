@@ -1621,8 +1621,6 @@ keypress(struct wl_listener *listener, void *data)
 	if (consumed[event->keycode]) {
 		if (event->state == WL_KEYBOARD_KEY_STATE_RELEASED)
 			consumed[event->keycode] = false;
-		else
-			fprintf(stderr, "inconsistent state for keycode %u\n", event->keycode);
 		return; // don't pass the release event of a handled event to the client
 	}
 	wlr_seat_set_keyboard(seat, &group->wlr_group->keyboard);
