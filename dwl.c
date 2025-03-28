@@ -1597,13 +1597,13 @@ keypress(struct wl_listener *listener, void *data)
 
 	/* On _press_ if there is no active screen locker,
 	 * attempt to process a compositor keybinding. */
+	bool run_func = event->state == WL_KEYBOARD_KEY_STATE_PRESSED;
 	if (!locked) {
-		bool run_func = event->state == WL_KEYBOARD_KEY_STATE_PRESSED;
 		for (i = 0; i < nsyms; i++)
 			handled = keybinding(mods, syms[i], run_func) || handled;
 	}
 
-	if (handled && group->wlr_group->keyboard.repeat_info.delay > 0) {
+	if (handled && run_func && group->wlr_group->keyboard.repeat_info.delay > 0) {
 		group->mods = mods;
 		group->keysyms = syms;
 		group->nsyms = nsyms;
