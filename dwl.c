@@ -294,7 +294,7 @@ static void gpureset(struct wl_listener *listener, void *data);
 static void handlesig(int signo);
 static void incnmaster(const Arg *arg);
 static void inputdevice(struct wl_listener *listener, void *data);
-static int keybinding(uint32_t mods, xkb_keysym_t sym);
+static int keybinding(uint32_t mods, xkb_keysym_t sym, uint32_t keycode);
 static void keypress(struct wl_listener *listener, void *data);
 static void keypressmod(struct wl_listener *listener, void *data);
 static int keyrepeat(void *data);
@@ -412,6 +412,7 @@ static struct wlr_output_layout *output_layout;
 static struct wlr_box sgeom;
 static struct wl_list mons;
 static Monitor *selmon;
+static bool consumed[KEY_MAX + 1];
 
 #ifdef XWAYLAND
 static void activatex11(struct wl_listener *listener, void *data);
@@ -1556,7 +1557,7 @@ inputdevice(struct wl_listener *listener, void *data)
 }
 
 int
-keybinding(uint32_t mods, xkb_keysym_t sym)
+keybinding(uint32_t mods, xkb_keysym_t sym, uint32_t keycode)
 {
 	/*
 	 * Here we handle compositor keybindings. This is when the compositor is
@@ -1567,6 +1568,8 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
 	for (k = keys; k < END(keys); k++) {
 		if (CLEANMASK(mods) == CLEANMASK(k->mod)
 				&& sym == k->keysym && k->func) {
+			if (keycode <= KEY_MAX)
+				consumed[keycode] = true;
 			k->func(&k->arg);
 			return 1;
 		}
@@ -1591,7 +1594,6 @@ keypress(struct wl_listener *listener, void *data)
 
 	int handled = 0;
 	uint32_t mods = wlr_keyboard_get_modifiers(&group->wlr_group->keyboard);
-	static bool consumed[KEY_MAX + 1];
 
 	wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
 
@@ -1599,7 +1601,7 @@ keypress(struct wl_listener *listener, void *data)
 	 * attempt to process a compositor keybinding. */
 	if (!locked && event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		for (i = 0; i < nsyms; i++)
-			handled = keybinding(mods, syms[i]) || handled;
+			handled = keybinding(mods, syms[i], event->keycode) || handled;
 	}
 
 	if (handled && group->wlr_group->keyboard.repeat_info.delay > 0) {
@@ -1613,10 +1615,8 @@ keypress(struct wl_listener *listener, void *data)
 		wl_event_source_timer_update(group->key_repeat_source, 0);
 	}
 
-	if (handled) {
-		consumed[event->keycode] = true;
+	if (handled)
 		return;
-	}
 
 	if (consumed[event->keycode]) {
 		if (event->state == WL_KEYBOARD_KEY_STATE_RELEASED)
@@ -1654,7 +1654,8 @@ keyrepeat(void *data)
 			1000 / group->wlr_group->keyboard.repeat_info.rate);
 
 	for (i = 0; i < group->nsyms; i++)
-		keybinding(group->mods, group->keysyms[i]);
+		// pass KEY_MAX + 1 so consumed[keycode] will not update
+		keybinding(group->mods, group->keysyms[i], KEY_MAX + 1);
 
 	return 0;
 }
