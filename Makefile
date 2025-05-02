@@ -61,18 +61,18 @@ dist: clean
 
 install: dwl
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	rm -f $(DESTDIR)$(PREFIX)/bin/dwl
-	cp -f dwl $(DESTDIR)$(PREFIX)/bin
-	chmod 755 $(DESTDIR)$(PREFIX)/bin/dwl
+	rm -f $(DESTDIR)$(PREFIX)/bin/waylua
+	cp -f dwl $(DESTDIR)$(PREFIX)/bin/waylua
+	chmod 755 $(DESTDIR)$(PREFIX)/bin/waylua
 	mkdir -p $(DESTDIR)$(MANDIR)/man1
-	cp -f dwl.1 $(DESTDIR)$(MANDIR)/man1
-	chmod 644 $(DESTDIR)$(MANDIR)/man1/dwl.1
+	cp -f dwl.1 $(DESTDIR)$(MANDIR)/man1/waylua.1
+	chmod 644 $(DESTDIR)$(MANDIR)/man1/waylua.1
 	mkdir -p $(DESTDIR)$(DATADIR)/wayland-sessions
-	cp -f dwl.desktop $(DESTDIR)$(DATADIR)/wayland-sessions/dwl.desktop
-	chmod 644 $(DESTDIR)$(DATADIR)/wayland-sessions/dwl.desktop
+	cp -f waylua.desktop $(DESTDIR)$(DATADIR)/wayland-sessions/waylua.desktop
+	chmod 644 $(DESTDIR)$(DATADIR)/wayland-sessions/waylua.desktop
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/dwl $(DESTDIR)$(MANDIR)/man1/dwl.1 \
-		$(DESTDIR)$(DATADIR)/wayland-sessions/dwl.desktop
+	rm -f $(DESTDIR)$(PREFIX)/bin/waylua $(DESTDIR)$(MANDIR)/man1/waylua.1 \
+		$(DESTDIR)$(DATADIR)/wayland-sessions/waylua.desktop
 
 .SUFFIXES: .c .o
 .c.o:
