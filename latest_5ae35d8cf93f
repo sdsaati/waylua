@@ -1,0 +1,28 @@
+{
+  "id": 224008786,
+  "tag_name": "2025-06-09-sweet-syrup",
+  "draft": false,
+  "prerelease": false,
+  "assets": [
+    {
+      "id": 262300222,
+      "url": "https://api.github.com/repos/mason-org/mason-registry/releases/assets/262300222",
+      "name": "checksums.txt",
+      "browser_download_url": "https://github.com/mason-org/mason-registry/releases/download/2025-06-09-sweet-syrup/checksums.txt",
+      "created_at": "2025-06-09T11:11:55Z",
+      "updated_at": "2025-06-09T11:11:55Z",
+      "size": 164,
+      "download_count": 2148
+    },
+    {
+      "id": 262300223,
+      "url": "https://api.github.com/repos/mason-org/mason-registry/releases/assets/262300223",
+      "name": "registry.json.zip",
+      "browser_download_url": "https://github.com/mason-org/mason-registry/releases/download/2025-06-09-sweet-syrup/registry.json.zip",
+      "created_at": "2025-06-09T11:11:55Z",
+      "updated_at": "2025-06-09T11:11:55Z",
+      "size": 62935,
+      "download_count": 2194
+    }
+  ]
+}
